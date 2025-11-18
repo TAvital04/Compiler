@@ -470,7 +470,7 @@
             // Evaluate the condition, place the result at the top of the stack
             CONDITION();
 
-            // Store the code index for the jpc temporarily
+            // Store the code index for the jpc instruction that handles the false condition
             int jpcIdx = instructionIndex;
 
             // Emit the jpc with a temporary displacement value
@@ -485,13 +485,32 @@
             // Perform the true condition operations
             STATEMENT();
 
-            // Replace the temporary jpc displacement value with the index of
-                // the first instruction following the conditional
+            // Replace the temporary false condition jpc displacement value with the
+                // index of the first instruction of the false condition
             instructionList[jpcIdx].m = instructionIndex * 3;
 
-            // Eat the fi symbol
+            // Store the code index for the jpc instruction that handles the true condition
+            jpcIdx = instructionIndex;
+
+            // Emit the jpc with a temporary displacement value
+            EMIT(JPC, 0, 0);
+
+            // Make sure the else symbol comes next
+            if(tokenList[tokenIndex].type != elsesym) {
+                ERROR("Error: if statement must include else clause");
+            }
+            tokenIndex++;
+
+            // Perform the false condition operations
+            STATEMENT();
+
+            // Replace the temporary true condition jpc displacement value with the
+                // index of the first instructio following the if/else block
+            instructionList[jpcIdx].m = instructionIndex * 3;
+
+            // Make sure the fi symbol comes next
             if (tokenList[tokenIndex].type != fisym) {
-                ERROR("Error: if statement must be ended with fi");
+                ERROR("Error: else must be followed by fi");
             }
             tokenIndex++;
         }
