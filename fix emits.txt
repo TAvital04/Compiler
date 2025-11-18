@@ -1,0 +1,7 @@
+fix emits
+
+store variables at the address relative to the lexographical level
+
+error messages for wrong lexographical level
+
+implement CAL and RTN
