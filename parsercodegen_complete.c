@@ -148,6 +148,7 @@
     void BLOCK();
     void CONST_DECLARATION();
     int VAR_DECLARATION();
+    void PROCEDURE_DECLARATION();
     void STATEMENT();
     void CONDITION();
     void EXPRESSION();
@@ -280,6 +281,7 @@
     void PROGRAM() {
         // Emit jump to main
         EMIT(JMP, 0, 3);
+
         // Perform a block
         BLOCK();
 
@@ -299,12 +301,14 @@
         // Perform constant declarations
         CONST_DECLARATION();
 
-        // Perform variable declarations
-            // Store and count variables
-            int numVars = VAR_DECLARATION();
+        // Store and count variables
+        int numVars = VAR_DECLARATION();
 
-            // Emit space allocation for the variables
-            EMIT(INC, 0, 3 + numVars);
+        // Perform procedure declarations
+        PROCEDURE_DECLARATION();
+
+        // Emit space allocation for the variables
+        EMIT(INC, 0, 3 + numVars);
 
         // Perform statements
         STATEMENT();
@@ -406,6 +410,40 @@
     }
 
     /*
+        Stores procedures in the symbol table if there are any
+    */
+    void PROCEDURE_DECLARATION() {
+        // Iterate through the procedures
+        while(tokenList[tokenIndex].type == procsym) {
+            // Update the token index
+            tokenIndex++;
+
+            // Make sure an identifier is next
+            if(tokenList[tokenIndex].type != identsym) {
+                ERROR("Error: const, var, read, procedure, and call keywords must be followed by identifier");
+            }
+
+            // Make sure the identifier name has not been used yet
+            if(SYMBOL_TABLE_CHECK(tokenList[tokenIndex].supplement) != -1) {
+                ERROR("Error: symbol name has already been declared");
+            }
+
+            // Store the procedure
+            STORE_SYMBOL(3, tokenList[tokenIndex].supplement, 0, level, instructionIndex, 0);
+            tokenIndex++;
+
+            // Process the procedure's block
+            BLOCK(level + 1);
+
+            // Make sure a semicolon is next
+            if(tokenList[tokenIndex].type != semicolonsym) {
+                ERROR("Error: procedure declaration must be followed by a semicolon");
+            }
+            tokenIndex++;
+        }
+    }
+
+    /*
         Performs variable assignments, child statements, conditionals, and read/
             write operations
     */
@@ -446,7 +484,7 @@
 
             // Make sure the next token is an identifier
             if(tokenList[tokenIndex].type != identsym) {
-                ERROR("");
+                ERROR("Error: const, var, read, procedure, and call keywords must be followed by identifier");
             }
 
             // Find the identifier associated with the token
