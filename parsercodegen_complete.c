@@ -483,7 +483,7 @@
             EXPRESSION();
 
             // Emit the storage of the new value
-            EMIT(STO, 0, symbolTable[symIdx].addr);
+            EMIT(STO, level - symbolTable[symIdx].level, symbolTable[symIdx].addr);
         }
 
         // Perform a function call
@@ -515,7 +515,7 @@
             }
 
             // Emit the procedure call
-            EMIT(CAL, 0, symbolTable[symIdx].addr);
+            EMIT(CAL, level - symbolTable[symIdx].level, symbolTable[symIdx].addr);
 
             // Update the token index
             tokenIndex++;
