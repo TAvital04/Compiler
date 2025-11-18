@@ -312,6 +312,13 @@
 
         // Perform statements
         STATEMENT();
+
+        // Mark all variables and procedures at the block's level as 1
+        for(int i = 0; i < symbolIndex; i++) {
+            if(symbolTable[symbolIndex].level == level) {
+                symbolTable[symbolIndex].mark = 1;
+            }
+        }
     }
 
     /*
@@ -353,7 +360,7 @@
                 }
                 
                 // Save the constant
-                STORE_SYMBOL(1, symbolName, supplement_to_number(tokenList[tokenIndex].supplement), 0, 0, 0);
+                STORE_SYMBOL(1, symbolName, supplement_to_number(tokenList[tokenIndex].supplement), level, 0, 0);
                 tokenIndex++;
             } while(tokenList[tokenIndex].type == commasym);
 
@@ -394,7 +401,7 @@
                 }
 
                 // Store the variable
-                STORE_SYMBOL(2, tokenList[tokenIndex].supplement, 0, 0, numVars + 2, 0);
+                STORE_SYMBOL(2, tokenList[tokenIndex].supplement, 0, level, numVars + 2, 0);
                 tokenIndex++;
             } while(tokenList[tokenIndex].type == commasym);
 
@@ -433,7 +440,9 @@
             tokenIndex++;
 
             // Process the procedure's block
-            BLOCK(level + 1);
+            level++;
+            BLOCK();
+            level--;
 
             // Make sure a semicolon is next
             if(tokenList[tokenIndex].type != semicolonsym) {
@@ -453,18 +462,18 @@
             // Find the identifier associated with the token
             int symIdx = SYMBOL_TABLE_CHECK(tokenList[tokenIndex].supplement);
 
-            // If the variable is not found return an error
+            // Make sure the identifier exists
             if(symIdx == -1) {
                 ERROR("Error: undeclared identifier");
             }
 
-            // Make sure the symbol found is not a constant
+            // Make sure the identifier represents a variable
             if(symbolTable[symIdx].kind != 2) {
                 ERROR("Error: only variable values may be altered");
             }
             tokenIndex++;
 
-            // Make sure the next token is a becomes symbol
+            // Make sure a becomes symbol is next
             if(tokenList[tokenIndex].type != becomessym) {
                 ERROR("Error: assignment statements must use :=");
             }
@@ -490,7 +499,7 @@
             // Find the identifier associated with the token
             int symIdx = SYMBOL_TABLE_CHECK(tokenList[tokenIndex].supplement);
 
-            // If the identifier is not found return an error
+            // Make sure the identifier exists
             if(symIdx == -1) {
                 ERROR("Error: undeclared identifier");
             }
@@ -500,8 +509,13 @@
                 ERROR("Error: call statement may only target procedures");
             }
 
+            // Make sure the procedure can be accessed at the current level
+            if(symbolTable[symIdx].mark != 0) {
+                ERROR("");
+            }
+
             // Emit the procedure call
-            EMIT(CAL, level, symbolTable[symIdx].addr);
+            EMIT(CAL, 0, symbolTable[symIdx].addr);
 
             // Update the token index
             tokenIndex++;
@@ -629,9 +643,14 @@
                 ERROR("Error: undeclared identifier");
             }
 
-            // Make sure the symbol found is not a constant
+            // Make sure the symbol found is a variable
             if(symbolTable[symIdx].kind != 2) {
                 ERROR("Error: only variable values may be altered");
+            }
+
+            // Make sure the variable can be accessed at the current level
+            if(symbolTable[symIdx].mark != 0) {
+                ERROR("");
             }
             tokenIndex++;
 
@@ -804,14 +823,13 @@
                 ERROR("Error: undeclared identifier");
             }
 
-            // Check whether the identifier represents a constant
+            // Constants are loaded as int literals
             if(symbolTable[symIdx].kind == 1) {
                 // Emit the load of the literal value to the top of the stack
                 EMIT(LIT, 0, symbolTable[symIdx].val);
             }
-            // The identifier represents a variable
             else {
-                // Emit the load of the variable address
+                // Emit the load of the identifier address
                 EMIT(LOD, 0, symbolTable[symIdx].addr);
             }
 
