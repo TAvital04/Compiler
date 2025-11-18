@@ -182,8 +182,9 @@
     Instruction *instructionList = NULL;
 
     int tokenListSize = 0, symbolTableSize = 0, instructionListSize = 0;
-
     int tokenIndex = 0, symbolIndex = 0, instructionIndex = 0;
+
+    int level = 0;
 
 // Main
     int main(int argc, char *argv[]) {
@@ -462,7 +463,10 @@
             }
 
             // Emit the procedure call
-            EMIT(CAL, 0, )
+            EMIT(CAL, level, symbolTable[symIdx].addr);
+
+            // Update the token index
+            tokenIndex++;
         }
 
         // Perform a child statement
