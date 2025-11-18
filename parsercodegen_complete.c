@@ -1,11 +1,4 @@
 /*
-    AI USAGES:
-        1) When to use char *string[] and char string[]
-        3) Using realloc on an initialized array
-*/
-
-
-/*
     Assignment:
     HW3 - Parser and Code Generator for PL/0
 
@@ -485,15 +478,15 @@
             // Perform the true condition operations
             STATEMENT();
 
+            // Store the code index for the jpc instruction that handles the true condition
+            int jmpIdx = instructionIndex;
+
+            // Emit the jpc with a temporary displacement value
+            EMIT(JMP, 0, 0);
+
             // Replace the temporary false condition jpc displacement value with the
                 // index of the first instruction of the false condition
             instructionList[jpcIdx].m = instructionIndex * 3;
-
-            // Store the code index for the jpc instruction that handles the true condition
-            jpcIdx = instructionIndex;
-
-            // Emit the jpc with a temporary displacement value
-            EMIT(JPC, 0, 0);
 
             // Make sure the else symbol comes next
             if(tokenList[tokenIndex].type != elsesym) {
@@ -506,7 +499,7 @@
 
             // Replace the temporary true condition jpc displacement value with the
                 // index of the first instructio following the if/else block
-            instructionList[jpcIdx].m = instructionIndex * 3;
+            instructionList[jmpIdx].m = instructionIndex * 3;
 
             // Make sure the fi symbol comes next
             if (tokenList[tokenIndex].type != fisym) {

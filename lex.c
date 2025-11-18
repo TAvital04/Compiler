@@ -9,12 +9,11 @@
     Author : Tal Avital
     Language : C ( only )
     To Compile :
-        gcc - O2 - std = c11
-        -o lex lex . c
+        gcc - O2 - std = c11 -o lex lex.c
     To Execute ( on Eustis ):
-        ./ lex < input file >
+        ./lex < input file >
         where :
-        < input file > is the path to the PL /0 source program
+            < input file > is the path to the PL /0 source program
     Notes :
         - Implement a lexical analyser for the PL /0 language .
         - The program must detect errors such as

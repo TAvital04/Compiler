@@ -1,0 +1,8 @@
+const a = 2, b = 3;
+var x, y;
+begin
+  x := a + b * 4;
+  y := (a + b) * 4;
+  write x;
+  write y
+end.

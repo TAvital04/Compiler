@@ -358,9 +358,10 @@ e VM must now support the EVEN instruction (OPR 0
                                 }
                                 else
                                 {
-                                    pas[sp] = 2;
+                                    pas[sp] = 0;
                                 }
                             }
+                            break;
 
                             default:
                                 fprintf(stderr, "Invalid input");
@@ -554,7 +555,8 @@ e VM must now support the EVEN instruction (OPR 0
                     case 7: printf("LSS\t"); break;
                     case 8: printf("LEQ\t"); break;
                     case 9: printf("GTR\t"); break;
-                    case 10: printf("GEQ\t"); break; 
+                    case 10: printf("GEQ\t"); break;
+                    case 11: printf("EVEN\n"); break;
                 }
             break;
             case 3: printf("LOD\t"); break;

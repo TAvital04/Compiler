@@ -1,0 +1,16 @@
+const a = 1, b = 2, c = 3;
+var x;
+
+begin
+    x := 0;
+    if a < b then
+        if b < c then
+            x := 1
+        else
+            x := 2
+        fi
+    else
+        x := 3
+    fi;
+    write x
+end.

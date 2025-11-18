@@ -1,0 +1,10 @@
+var x;
+begin
+  x := 1;
+  if x = 1 then write 111 else write 100 fi;
+  if x <> 2 then write 222 else write 200 fi;
+  if x < 2 then write 333 else write 300 fi;
+  if x <= 1 then write 444 else write 400 fi;
+  if x > 0 then write 555 else write 500 fi;
+  if x >= 1 then write 666 else write 600 fi;
+end.

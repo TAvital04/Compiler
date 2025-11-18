@@ -1,0 +1,10 @@
+var x;
+
+begin
+    x := 3;
+    if x then
+        write 1
+    else
+        write 2
+    fi
+end.

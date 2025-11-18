@@ -1,0 +1,10 @@
+var x;
+
+begin
+    x := 4;
+    if even x then
+        write 1
+    else
+        write 0
+    fi
+end.

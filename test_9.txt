@@ -1,0 +1,14 @@
+var x;
+
+begin
+    x := 3;
+    while x > 0 do
+    begin
+        if even x then
+            write 8
+        else
+            write 9
+        fi;
+        x := x - 1
+    end
+end.
