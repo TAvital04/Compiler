@@ -438,6 +438,33 @@
             EMIT(STO, 0, symbolTable[symIdx].addr);
         }
 
+        // Perform a function call
+        else if(tokenList[tokenIndex].type == callsym) {
+            // Update the token index
+            tokenIndex++;
+
+            // Make sure the next token is an identifier
+            if(tokenList[tokenIndex].type != identsym) {
+                ERROR("");
+            }
+
+            // Find the identifier associated with the token
+            int symIdx = SYMBOL_TABLE_CHECK(tokenList[tokenIndex].supplement);
+
+            // If the identifier is not found return an error
+            if(symIdx == -1) {
+                ERROR("Error: undeclared identifier");
+            }
+
+            // Make sure the identifier represents a procedure
+            if(symbolTable[symIdx].kind != 3) {
+                ERROR("Error: call statement may only target procedures");
+            }
+
+            // Emit the procedure call
+            EMIT(CAL, 0, )
+        }
+
         // Perform a child statement
         else if(tokenList[tokenIndex].type == beginsym) {
             // Perform statements as long as there are semicolons
