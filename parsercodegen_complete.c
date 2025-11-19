@@ -156,7 +156,7 @@
     void FACTOR();
 
     // Recursive descent parser helper functions
-    int SYMBOL_TABLE_CHECK(char *target);
+    int SYMBOL_TABLE_CHECK(char *target, int level);
     void STORE_SYMBOL(int kind, char *name, int value, int level, int address, int mark);
 
     void ERROR(char *errorString);
@@ -338,7 +338,7 @@
                 }
 
                 // Make sure the identifier name has not been used yet
-                if(SYMBOL_TABLE_CHECK(tokenList[tokenIndex].supplement) != -1) {
+                if(SYMBOL_TABLE_CHECK(tokenList[tokenIndex].supplement, level) != -1) {
                     ERROR("Error: symbol name has already been declared");
                 }
 
@@ -550,7 +550,7 @@
             int jpcIdx = instructionIndex;
 
             // Emit the jpc with a temporary displacement value
-            EMIT(JPC, 0, 0);
+            EMIT(JPC, level, 0);
 
             // Make sure the then symbol comes next
             if(tokenList[tokenIndex].type != thensym) {
@@ -564,8 +564,8 @@
             // Store the code index for the jpc instruction that handles the true condition
             int jmpIdx = instructionIndex;
 
-            // Emit the jpc with a temporary displacement value
-            EMIT(JMP, 0, 0);
+            // Emit the jmc with a temporary displacement value
+            EMIT(JMP, level, 0);
 
             // Replace the temporary false condition jpc displacement value with the
                 // index of the first instruction of the false condition
@@ -612,13 +612,13 @@
             int jpcIdx = instructionIndex;
 
             // Emit the jpc with a temporary displacement value
-            EMIT(JPC, 0, 0);
+            EMIT(JPC, level, 0);
 
             // Perform the true condition operations
             STATEMENT();
 
             // Emit a jmp back to the condition of the loop
-            EMIT(JMP, 0, loopIdx * 3);
+            EMIT(JMP, level, loopIdx * 3);
 
             // Replace the temporary jpc displacement value with the index of
                 // the first instruction following the conditional
@@ -658,7 +658,7 @@
             EMIT(SYS, 0, READ);
 
             // Emit the storage of the new value
-            EMIT(STO, 0, symbolTable[symIdx].addr);
+            EMIT(STO, symbolTable[symIdx].level, symbolTable[symIdx].addr);
         }
 
         // Perform a write operation
@@ -830,7 +830,7 @@
             }
             else {
                 // Emit the load of the identifier address
-                EMIT(LOD, 0, symbolTable[symIdx].addr);
+                EMIT(LOD, symbolTable[symIdx].level, symbolTable[symIdx].addr);
             }
 
             tokenIndex++;
@@ -870,16 +870,17 @@
         
         Returns the index or -1
     */
-    int SYMBOL_TABLE_CHECK(char *target) {
+    int SYMBOL_TABLE_CHECK(char *target, int level) {
+        int count = 0;
+
         // Compare every name in the symbol table with the target
         for(int i = 0; i < symbolIndex; i++) {
-            if(!strcmp(symbolTable[i].name, target)) {
-                // Signify that the variable just got used (this only works because no part of the program
-                    // checks only for the existance of a variable without any intention of using it)
-                symbolTable[i].mark = 1;
-
-                // Return the index
-                return i;
+            if(symbolTable[i].level == level) {
+                if(!strcmp(symbolTable[i].name, target)) {
+                    // Return the index relative to the lexographical level
+                    return count;
+                }
+                count += 1;
             }
         }
 
