@@ -156,8 +156,9 @@
     void FACTOR();
 
     // Recursive descent parser helper functions
-    int SYMBOL_TABLE_CHECK(char *target, int level);
+    int SYMBOL_TABLE_CHECK(char *target);
     void STORE_SYMBOL(int kind, char *name, int value, int level, int address, int mark);
+    int NEW_SYMBOL_ADDRESS(int level);
 
     void ERROR(char *errorString);
     void EMIT(int o, int l, int m);
@@ -401,7 +402,7 @@
                 }
 
                 // Store the variable
-                STORE_SYMBOL(2, tokenList[tokenIndex].supplement, 0, level, numVars + 2, 0);
+                STORE_SYMBOL(2, tokenList[tokenIndex].supplement, 0, level, NEW_SYMBOL_ADDRESS(level) + 2, 0);
                 tokenIndex++;
             } while(tokenList[tokenIndex].type == commasym);
 
@@ -870,17 +871,11 @@
         
         Returns the index or -1
     */
-    int SYMBOL_TABLE_CHECK(char *target, int level) {
-        int count = 0;
-
+    int SYMBOL_TABLE_CHECK(char *target) {
         // Compare every name in the symbol table with the target
         for(int i = 0; i < symbolIndex; i++) {
-            if(symbolTable[i].level == level) {
-                if(!strcmp(symbolTable[i].name, target)) {
-                    // Return the index relative to the lexographical level
-                    return count;
-                }
-                count += 1;
+            if(!strcmp(symbolTable[i].name, target)) {
+                return i;
             }
         }
 
@@ -902,6 +897,21 @@
 
         // Increment the symbol index
         symbolIndex++;
+    }
+
+    /*
+        Instantiate the address of a new symbol relative to its block
+    */
+    int NEW_SYMBOL_ADDRESS(int level) {
+        int result = 0;
+
+        for(int i = 0; i < symbolIndex; i++) {
+            if(symbolTable[i].level == level && symbolTable[i].mark == 0) {
+                result++;
+            }
+        }
+
+        return result;
     }
 
     /*
