@@ -1,0 +1,25 @@
+var a, b, c;
+
+procedure incA;
+var t;
+begin
+    t := 1;
+    a := a + t;
+end;
+
+procedure setB;
+begin
+    b := 5;
+end;
+
+begin
+    a := 0;
+    b := 0;
+    c := 0;
+
+    call incA;
+    call incA;
+    call setB;
+
+    c := a
+end.

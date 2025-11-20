@@ -1,10 +1,4 @@
 /*
-e VM must now support the EVEN instruction (OPR 0
-11) for testing whether a number is even
-
-*/
-
-/*
     Assignment:
     vm.c - Implement a P-machine virtual machine
 
@@ -408,10 +402,9 @@ e VM must now support the EVEN instruction (OPR 0
                         pas[sp - 1] = base(bp, l);
                         pas[sp - 2] = bp;
                         pas[sp - 3] = pc - 3;
-                        sp -= 3;
 
                         // Set bp to the base of the activision record
-                        bp = sp + 2;
+                        bp = sp - 1;
 
                         // Set pc to the start of pas at displacement m
                         pc = (PAS_SIZE - 1 - m) + 3;
@@ -501,7 +494,7 @@ e VM must now support the EVEN instruction (OPR 0
                             case 3:
                             {
                                 // Make the condition in the while loop false
-                                pc = bp;
+                                pc = bp + 3;
                             }
                             break;
                         }

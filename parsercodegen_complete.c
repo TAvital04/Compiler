@@ -280,9 +280,6 @@
         A block followed by a period
     */
     void PROGRAM() {
-        // Emit jump to main
-        EMIT(JMP, 0, 3);
-
         // Perform a block
         BLOCK();
 
@@ -299,6 +296,12 @@
         Performs constant declarations, variable declarations, and statements
     */
     void BLOCK() {
+        // Store the code index for the jmp instruction that navigates to the procedure
+        int procIdx = instructionIndex;
+
+        // Emit the jmp to the procedure with a temporary address value
+        EMIT(JMP, 0, 0);
+
         // Perform constant declarations
         CONST_DECLARATION();
 
@@ -308,6 +311,9 @@
         // Perform procedure declarations
         PROCEDURE_DECLARATION();
 
+        // Store the address of the first instruction of the procedure
+        instructionList[procIdx].m = instructionIndex * 3;
+
         // Emit space allocation for the variables
         EMIT(INC, 0, 3 + numVars);
 
@@ -316,9 +322,14 @@
 
         // Mark all variables and procedures at the block's level as 1
         for(int i = 0; i < symbolIndex; i++) {
-            if(symbolTable[symbolIndex].level == level) {
-                symbolTable[symbolIndex].mark = 1;
+            if(symbolTable[i].level == level) {
+                symbolTable[i].mark = 1;
             }
+        }
+
+        // Emit the return except for main
+        if(level != 0) {
+            EMIT(OPR, 0, RTN);
         }
     }
 
@@ -339,7 +350,7 @@
                 }
 
                 // Make sure the identifier name has not been used yet
-                if(SYMBOL_TABLE_CHECK(tokenList[tokenIndex].supplement, level) != -1) {
+                if(SYMBOL_TABLE_CHECK(tokenList[tokenIndex].supplement) != -1) {
                     ERROR("Error: symbol name has already been declared");
                 }
 
@@ -402,7 +413,7 @@
                 }
 
                 // Store the variable
-                STORE_SYMBOL(2, tokenList[tokenIndex].supplement, 0, level, NEW_SYMBOL_ADDRESS(level) + 2, 0);
+                STORE_SYMBOL(2, tokenList[tokenIndex].supplement, 0, level, NEW_SYMBOL_ADDRESS(level) + 3, 0);
                 tokenIndex++;
             } while(tokenList[tokenIndex].type == commasym);
 
@@ -437,7 +448,12 @@
             }
 
             // Store the procedure
-            STORE_SYMBOL(3, tokenList[tokenIndex].supplement, 0, level, instructionIndex, 0);
+            STORE_SYMBOL(3, tokenList[tokenIndex].supplement, 0, level, instructionIndex * 3, 0);
+            tokenIndex++;
+
+            if(tokenList[tokenIndex].type != semicolonsym) {
+                ERROR("Error: constant and variable declarations must be followed by a semicolon");
+            }
             tokenIndex++;
 
             // Process the procedure's block
@@ -510,9 +526,9 @@
                 ERROR("Error: call statement may only target procedures");
             }
 
-            // Make sure the procedure can be accessed at the current level
+            // Make sure the procedure can be accessed at the current lexographical level
             if(symbolTable[symIdx].mark != 0) {
-                ERROR("");
+                ERROR("Error: undeclared identifier");
             }
 
             // Emit the procedure call
@@ -547,7 +563,7 @@
             // Evaluate the condition, place the result at the top of the stack
             CONDITION();
 
-            // Store the code index for the jpc instruction that handles the false condition
+            // Store the code index for the jpc instruction that navigates to the false condition
             int jpcIdx = instructionIndex;
 
             // Emit the jpc with a temporary displacement value
@@ -562,14 +578,13 @@
             // Perform the true condition operations
             STATEMENT();
 
-            // Store the code index for the jpc instruction that handles the true condition
+            // Store the code index for the jpc instruction that nagivates to the true condition
             int jmpIdx = instructionIndex;
 
             // Emit the jmc with a temporary displacement value
             EMIT(JMP, level, 0);
 
-            // Replace the temporary false condition jpc displacement value with the
-                // index of the first instruction of the false condition
+            // Store the address of the first instruction of the false condition
             instructionList[jpcIdx].m = instructionIndex * 3;
 
             // Make sure the else symbol comes next
@@ -581,8 +596,7 @@
             // Perform the false condition operations
             STATEMENT();
 
-            // Replace the temporary true condition jpc displacement value with the
-                // index of the first instructio following the if/else block
+            // Store the address of the first instruction of the true condition
             instructionList[jmpIdx].m = instructionIndex * 3;
 
             // Make sure the fi symbol comes next
@@ -621,8 +635,7 @@
             // Emit a jmp back to the condition of the loop
             EMIT(JMP, level, loopIdx * 3);
 
-            // Replace the temporary jpc displacement value with the index of
-                // the first instruction following the conditional
+            // Store the address of the first instruction in the loop
             instructionList[jpcIdx].m = instructionIndex * 3;
         }
 
@@ -649,9 +662,9 @@
                 ERROR("Error: only variable values may be altered");
             }
 
-            // Make sure the variable can be accessed at the current level
+            // Make sure the variable can be accessed at the current lexographical level
             if(symbolTable[symIdx].mark != 0) {
-                ERROR("");
+                ERROR("Error: undeclared identifier");
             }
             tokenIndex++;
 
