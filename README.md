@@ -1,16 +1,18 @@
-Required materials:
+## Required materials:
 
-    lex.c
-    input.txt
+lex.c
+
+input.txt
 
 
-How to run:
+## How to run:
 
-    Compile: gcc -o lex.exe lex.c
-    Run: ./lex.exe input.txt
+Compile: gcc -o lex.exe lex.c
+
+Run: ./lex.exe input.txt
     
 
-Example input.txt:
+## Example input.txt:
 
     var x, y;
     begin
